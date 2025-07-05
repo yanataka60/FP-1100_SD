@@ -51,12 +51,12 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 
 ハンダ付けに自信のない方はJ1の秋月電子通商　AE-microSD-LLCNVをお使いください。AE-microSD-LLCNVならパワーLED、アクセスLEDが付いています。
 
-![MicroSD Card Adapter1](https://github.com/yanataka60/TK-80BS_SD/blob/main/JPEG/MicroSD%20Card%20Adapter.jpg)
+![MicroSD Card Adapter1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/MicroSD%20Card%20Adapter.jpg)
 
 ### 注3)Arduino Pro MiniはA4、A5ピンも使っています。
 
 
-### FP-1100_SDをスロットに入れずに外付けとして使いたい場合のみ
+## FP-1100_SDをスロットに入れずに外付けとして使いたい場合のみ
 　J2ピンヘッダを取り付けます。また、スロットからケーブルを引き出す基板が必要ですのでFP-1100_SD基板がもう一枚必要です。
 
 |番号|品名|数量|備考|
@@ -64,6 +64,23 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 |J2|2x25Pinコネクタ|1|秋月電子通商 PH-2x40SGなど|
 ||FP-1100_SD基板|1||
 ||2.54mmピッチ2x25Pinフラットケーブル|1|FP-1100の拡張スロットは2x28Pinですが、2x25Pinが使えます|
+
+## 取り付け
+　FP-1100本体後ろのスロットに挿入します。
+
+　標準はSLOT0ですが、SLOT1で使うときは起動後にSLコマンドでSLOT1を指定してください。
+
+![SLOT0](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/SLOT0.JPG)
+![SLOT1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/SLOT1.JPG)
+
+### FP-1100_SDをスロットに入れずに外付けとしてフラットケーブルによる接続
+　基板上J2コネクタの1Pinを示す△印にフラットケーブルの1Pinを示す△印を合わせてフラットケーブルを挿入します。
+
+　FP-1100の拡張スロットは2x28Pinですが、2x25Pinフラットケーブルが使えます。
+
+![Flat cable1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(1).JPG)
+![Flat cable2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(2).JPG)
+![Flat cable2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(3).JPG)
 
 ## ROMへの書込み
 　Z80フォルダ内のRAMPACK1.binをROMライター(TL866II Plus等)を使って27256又は27512に書き込みます。
