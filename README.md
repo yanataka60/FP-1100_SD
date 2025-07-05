@@ -74,13 +74,13 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 ![SLOT1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/SLOT1.JPG)
 
 ### FP-1100_SDをスロットに入れずに外付けとしてフラットケーブルによる接続
-　基板上J2コネクタの1Pinを示す△印にフラットケーブルの1Pinを示す△印を合わせてフラットケーブルを挿入します。
+　J2コネクタ1Pinを示す基板上の△印にフラットケーブルの1Pinを示す△印を合わせてフラットケーブルを挿入します。
 
 　FP-1100の拡張スロットは2x28Pinですが、2x25Pinフラットケーブルが使えます。
 
-![Flat cable1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(1).JPG)
 ![Flat cable2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(2).JPG)
 ![Flat cable2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(3).JPG)
+![Flat cable1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/EXT_BOARD(1).JPG)
 
 ## ROMへの書込み
 　Z80フォルダ内のRAMPACK1.binをROMライター(TL866II Plus等)を使って27256又は27512に書き込みます。
