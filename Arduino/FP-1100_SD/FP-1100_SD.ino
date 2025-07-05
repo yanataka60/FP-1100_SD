@@ -3,16 +3,10 @@
 SdFat SD;
 char m_name[40];
 char f_name[40];
-char w_name[40];
 char c_name[40];
-char buf1[10],buf2[10];
 char sdir[10][40];
 File file_r,file_w;
-//byte stadr2,stadr1;
 byte f_length2,f_length1;
-//byte exeflg;
-unsigned int exeadr;
-byte exeadr2,exeadr1;
 unsigned long r_count=0;
 unsigned int f_length=0;
 
@@ -230,13 +224,6 @@ void addfpt(char *f_name,char *m_name){
          m_name[lp1++] = 't';
   }
   m_name[lp1] = 0x00;
-}
-
-int strhex1(byte wk1){
-  int hex1 = 0;
-  if(wk1>=0x30 && wk1<=0x39){hex1 = wk1-0x30;}
-  if(wk1>=0x41 && wk1<=0x46){hex1 = wk1-0x37;}
-  if(wk1>=0x61 && wk1<=0x66){hex1 = wk1-0x57;}
 }
 
 //比較文字列取得 32+1文字まで取得、ただしダブルコーテーションは無視する
