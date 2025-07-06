@@ -70,7 +70,7 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 
 　STLフォルダに基板を載せられるトレイの3Dデータを置いたので出力して使うと抜き差しが楽になります。
 
-![Tray](https://github.com/yanataka60/FP-1100_SD/blob/main/STL/FP-1100_SD%20tray.stl)
+![Tray](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/tray.jpg)
 
 　標準はSLOT0ですが、SLOT1で使うときは起動後にSLコマンドでSLOT1を指定してください。
 
