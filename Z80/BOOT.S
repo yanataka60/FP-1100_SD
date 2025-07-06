@@ -62,167 +62,6 @@ START:	JP		ST4
 ST2:	JP		BCALL
 ST3:	JP		INIT1
 
-ST4:	CALL	GETCP
-		CALL	INIT			;SLOT0を選択,8255初期化
-		LD		DE,TITLE
-		CALL	STRPRN
-CMD0:	CALL	LINPUT
-		LD		HL,BUFF
-		LD		A,(HL)
-		INC		HL
-		CP		'L'
-		JR		NZ,CMD1
-		LD		A,(HL)
-		CP		'M'				;LMコマンド
-		JR		Z,MLOAD
-		CP		'B'				;LBコマンド
-		JR		Z,BLOAD
-		CP		'G'				;LGコマンド
-		JP		Z,MEXE
-		JR		CMD9
-CMD1:	CP		'S'
-		JR		NZ,CMD9
-		LD		A,(HL)
-		CP		'M'				;SMコマンド
-		JP		Z,MSAVE
-		CP		'B'				;SBコマンド
-		JP		Z,BSAVE
-		CP		'D'				;SDコマンド
-		JP		Z,SDIR
-		CP		'L'				;SLコマンド
-		JR		Z,SLOT
-		JR		CMDERR
-CMD9:	CP		'Q'				;Qコマンド
-		RET		Z
-		CP		'B'				;Bコマンド
-		RET		Z
-		CP		'G'				;Gコマンド
-		JR		Z,EXECUTE
-CMDERR:	LD		DE,MSG_CMD		;コマンドエラーMSG
-		CALL	STRPRN
-		JR		CMD0
-
-;*********** SLコマンド(SLOT切り替え) ****************
-SLOT:
-		LD		DE,MSG_SLT		;SLOT 0 or 1
-		CALL	STRPRN
-		LD		HL,SDON+1
-SLT1:	CALL	KINPUT			;1文字入力
-		CP		'0'
-		JP		NZ,SLT2
-		LD		(HL),00H		;(SDON+1) <- 00H
-		CALL	INIT
-		JR		CMD0
-SLT2:	CP		'1'
-		JP		NZ,SLT3
-		LD		(HL),01H		;(SDON+1) <- 01H
-		CALL	INIT			;初期化再実行
-		JR		CMD0
-SLT3:	JR		SLT1			;0,1以外なら再入力
-
-;*********** LMコマンド(機械語プログラムのLOAD) ***********************
-MLOAD:
-		CALL	ML1
-		AND		A
-		JP		NZ,ERR
-		JP		CMD0
-
-;*********** Gコマンド(16進数4桁のアドレスへJUMP) ***********************
-EXECUTE:
-		CALL	STFN			;SPACE読み飛ばし
-		EX		DE,HL
-		CALL	STR2HEX			;HL <- (DE)からの文字列を16進数4桁
-		JP		(HL)
-
-;***************** LBコマンド(BASICプログラムのLOAD) **************************
-; 現在PROGをNEW処理した後に新たに未使用PROGポインタを使用してLOAD
-BLOAD:
-		INC		HL
-		LD		A,18H			;LOADコマンド18H
-		CALL	STCD			;コマンドコード送信
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-
-		CALL	STFN			;SPACE読み飛ばし
-		PUSH	HL
-		CALL	STFS			;ファイルネーム送信
-		POP		HL
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-		LD		DE,MSG_BL		;Loadingメッセージ
-		CALL	STRPRN
-		EX		DE,HL
-		CALL	STRPRN			;ファイルネーム表示
-		CALL	CRLF
-
-		CALL	NEWCMD			;NEW処理
-		CALL	RCVBYTE			;ファイル長受信
-		LD		E,A
-		CALL	RCVBYTE
-		LD		D,A
-		
-		LD		HL,(BASICEND)	;BASICプログラムがRAMENDを超えないかチェック
-		ADD		HL,DE
-		LD		BC,(TEXTEND)
-		XOR		A
-		SBC		HL,BC
-		JP		NC,BLERR		;超えるようであれば処理打ち切り
-		LD		HL,(BASICEND)
-		XOR		A
-		CALL	SNDBYTE			;処理継続指示
-
-BL2:	
-		CALL	RCVBYTE			;データ受信
-		LD		(HL),A
-		INC		HL
-		DEC		DE
-		LD		A,E
-		CALL	PRTDOT
-		LD		A,E
-		OR		D
-		JR		NZ,BL2			;ファイル長分をループ
-		CALL	CRLF
-		XOR		A
-		LD		(HL),A			;最後にENDマーク書き込み
-		
-		PUSH	HL
-		LD		DE,PROGPNT		;未使用PROGポインタを検索
-BL0:	LD		A,(DE)
-		CP		0FFH
-		JR		Z,BL1
-		INC		DE
-		INC		DE
-		INC		DE
-		JR		BL0
-BL1:	LD		HL,NOWPROG		;未使用PROGポインタに現在PROG番号を設定
-		LD		A,(HL)
-		LD		(DE),A
-		LD		HL,BASICEND		;現在PROGの先頭アドレスをセット
-		LD		A,(HL)
-		INC		DE
-		LD		(DE),A
-		INC		HL
-		INC		DE
-		LD		A,(HL)
-		LD		(DE),A
-		INC		DE
-		LD		A,0FFH			;次のPROGポインタに未使用フラグをセット
-		LD		(DE),A
-		POP		HL
-		
-		LD		(BASICEND),HL	;BASICテキスト最終アドレス+1をセット
-		LD		(BASICEND+2),HL
-		LD		(BASICEND+4),HL
-		LD		(BASICEND+6),HL
-		LD		(BASICEND+8),HL
-		
-BL3:	JP		CMD0
-
-BLERR:
-		LD		A,0E0H			;AREA OVERエラーを表示
-		CALL	SNDBYTE
-		JP		ERR
-
 ;*********** SMコマンド(機械語プログラムのSAVE) ******************************
 MSAVE:
 		INC		HL
@@ -378,6 +217,170 @@ BSERR:
 		LD		A,0E1H			;BASIC PROGRAM無しエラーを表示
 		JP		ERR
 
+;*********** SLコマンド(SLOT切り替え) ****************
+SLOT:
+		LD		DE,MSG_SLT		;SLOT 0 or 1
+		CALL	STRPRN
+		LD		HL,SDON+1
+SLT1:	CALL	KINPUT			;1文字入力
+		CP		'0'
+		JR		NZ,SLT2
+		LD		(HL),00H		;(SDON+1) <- 00H
+		CALL	INIT
+		JP		CMD0
+SLT2:	CP		'1'
+		JR		NZ,SLT3
+		LD		(HL),01H		;(SDON+1) <- 01H
+		CALL	INIT			;初期化再実行
+		JP		CMD0
+SLT3:	JR		SLT1			;0,1以外なら再入力
+
+;*************** FP-1100_SD初期化 *************************
+INIT1:
+		LD		DE,MSG_INIT
+		CALL	STRPRN
+		
+;**** SLOT SELECT ****
+INIT:
+SDON:	LD		A,00H			;SLOT0を選択
+		LD		BC,0FFA0H
+		AND		01H
+		OR		02H
+		OUT		(C),A
+
+;**** 8255初期化 ****
+;PORTC下位BITをOUTPUT、上位BITをINPUT、PORTBをINPUT、PORTAをOUTPUT
+		LD		A,8AH
+		LD		BC,PPI_R
+		OUT		(C),A
+;出力BITをリセット
+INIT2:	LD		A,00H			;PORTA <- 0
+		LD		BC,PPI_A
+		OUT		(C),A
+		LD		BC,PPI_C
+		OUT		(C),A			;PORTC <- 0
+		RET
+
+MSG_INIT:
+		DB		'FP-1100_SD Initialize Ok!',0DH,0AH,00H
+TITLE:	DB		'******** FP-1100_SD ********',0DH,0AH,00H
+
+;******************* ここから以降を上書きしなければLM,LB,SD等プログラムのLOADは使用可能(F9AA)
+;*********** LMコマンド(機械語プログラムのLOAD) ***********************
+MLOAD:
+		CALL	ML1
+		AND		A
+		JP		NZ,ERR
+		JP		CMD0
+
+;***************** LBコマンド(BASICプログラムのLOAD) **************************
+; 現在PROGをNEW処理した後に新たに未使用PROGポインタを使用してLOAD
+BLOAD:
+		INC		HL
+		LD		A,18H			;LOADコマンド18H
+		CALL	STCD			;コマンドコード送信
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+
+		CALL	STFN			;SPACE読み飛ばし
+		PUSH	HL
+		CALL	STFS			;ファイルネーム送信
+		POP		HL
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+		LD		DE,MSG_BL		;Loadingメッセージ
+		CALL	STRPRN
+		EX		DE,HL
+		CALL	STRPRN			;ファイルネーム表示
+		CALL	CRLF
+
+		CALL	NEWCMD			;NEW処理
+		CALL	RCVBYTE			;ファイル長受信
+		LD		E,A
+		CALL	RCVBYTE
+		LD		D,A
+		
+		LD		HL,(BASICEND)	;BASICプログラムがRAMENDを超えないかチェック
+		ADD		HL,DE
+		LD		BC,(TEXTEND)
+		XOR		A
+		SBC		HL,BC
+		JR		NC,BLERR		;超えるようであれば処理打ち切り
+		LD		HL,(BASICEND)
+		XOR		A
+		CALL	SNDBYTE			;処理継続指示
+
+BL2:	
+		CALL	RCVBYTE			;データ受信
+		LD		(HL),A
+		INC		HL
+		DEC		DE
+		LD		A,E
+		CALL	PRTDOT
+		LD		A,E
+		OR		D
+		JR		NZ,BL2			;ファイル長分をループ
+		CALL	CRLF
+		XOR		A
+		LD		(HL),A			;最後にENDマーク書き込み
+		
+		PUSH	HL
+		LD		DE,PROGPNT		;未使用PROGポインタを検索
+BL0:	LD		A,(DE)
+		CP		0FFH
+		JR		Z,BL1
+		INC		DE
+		INC		DE
+		INC		DE
+		JR		BL0
+BL1:	LD		HL,NOWPROG		;未使用PROGポインタに現在PROG番号を設定
+		LD		A,(HL)
+		LD		(DE),A
+		LD		HL,BASICEND		;現在PROGの先頭アドレスをセット
+		LD		A,(HL)
+		INC		DE
+		LD		(DE),A
+		INC		HL
+		INC		DE
+		LD		A,(HL)
+		LD		(DE),A
+		INC		DE
+		LD		A,0FFH			;次のPROGポインタに未使用フラグをセット
+		LD		(DE),A
+		POP		HL
+		
+		LD		(BASICEND),HL	;BASICテキスト最終アドレス+1をセット
+		LD		(BASICEND+2),HL
+		LD		(BASICEND+4),HL
+		LD		(BASICEND+6),HL
+		LD		(BASICEND+8),HL
+		
+BL3:	JP		CMD0
+
+BLERR:
+		LD		A,0E0H			;AREA OVERエラーを表示
+		CALL	SNDBYTE
+		JP		ERR
+
+;************* BASIC中からの機械語ロード *****************
+;                     CALL &HF803:REM filenameと記述する
+BCALL:
+		CALL	GETCP
+		LD		HL,(WRKCP)		;現在実行BASICプログラムの注目ポイントを取得
+		INC		HL				;REM文をスキップ
+		INC		HL
+		INC		HL				;REM文の後ろに書かれているfilenameの先頭アドレスを取得
+		LD		A,17H			;LOADコマンド17H
+		CALL	STCD			;コマンドコード送信
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+		CALL	STFN			;SPACE読み飛ばし
+		PUSH	HL
+		CALL	STFS			;ファイルネーム送信
+		POP		HL
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+		JP		ML4
 
 ;************ SDコマンド(SD DIRECTORY LIST) **********************
 SDIR:
@@ -401,22 +404,12 @@ SDIR2:
 		DEC		HL
 		CALL	RCVBYTE				;選択ファイルの拡張子受信:0,BIN 1,BAS 2,FPT 3,その他
 		CP		00H
-		JP		Z,SDIR3				;BINならMLOAD又はMEXEへ
+		JP		Z,MLOAD				;BINならMLOADへ
 		CP		01H
 		JP		Z,BLOAD				;BASならBLOADへ
 		LD		A,0E3H
 		CALL	PR2HEX
 		JP		ERR					;以外はERROR
-
-SDIR3:
-		LD		DE,MSG_EXE
-		CALL	STRPRN
-SDIR4:	CALL	KINPUT
-		CP		'0'					;0,LOADのみ
-		JP		Z,MLOAD
-		CP		'1'					;1,LOADして即実行
-		JP		Z,MEXE
-		JR		SDIR4
 
 ;**** DIRLIST本体  ****
 ;****              戻り値 A=エラーコード ****
@@ -507,26 +500,6 @@ DL8:	CALL	SNDBYTE
 		
 DLRET:	RET
 
-;************* BASIC中からの機械語ロード *****************
-;                     CALL &HF803:REM filenameと記述する
-BCALL:
-		CALL	GETCP
-		LD		HL,(WRKCP)		;現在実行BASICプログラムの注目ポイントを取得
-		INC		HL				;REM文をスキップ
-		INC		HL
-		INC		HL				;REM文の後ろに書かれているfilenameの先頭アドレスを取得
-		LD		A,17H			;LOADコマンド17H
-		CALL	STCD			;コマンドコード送信
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-		CALL	STFN			;SPACE読み飛ばし
-		PUSH	HL
-		CALL	STFS			;ファイルネーム送信
-		POP		HL
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-		JP		ML4
-
 ERR:
 ERR_E0:
 		CP		0E0H
@@ -577,6 +550,96 @@ GETCP:	LD		(WRKSP),SP
 		
 		RET
 
+;**** ファイルネーム送信(IN:HL ファイルネームの先頭) ******
+STFS:	LD		B,20H
+STFS1:	LD		A,(HL)   	 	;FNAME送信
+		CALL	SNDBYTE
+		INC		HL
+		DJNZ	STFS1
+		LD		A,0DH
+		CALL	SNDBYTE
+		CALL	RCVBYTE  	 	;状態取得(00H=OK)
+		RET
+
+MSG_CMD:
+		DB		'COMMAND FAILED!',0DH,0AH
+		DB		' LM str: Load Binary',0DH,0AH
+		DB		' LG str: Load Binary And Exe',0DH,0AH
+		DB		' LB str: Load Basic',0DH,0AH
+		DB		' SM xxxx,yyyy,zzzz,str: Save Binary',0DH,0AH
+		DB		' SB str: Save Basic',0DH,0AH
+		DB		' SD str: SD Dir',0DH,0AH
+		DB		' SL    : SLOT Change',0DH,0AH
+		DB		' G x   : Exe Program',0DH,0AH
+		DB		' Q or B: Return Basic',0DH,0AH,00H
+MSG_ML:	DB		'Binary Loading:',00H
+MSG_MS:	DB		'Binary Saving:',00H
+MSG_BL:	DB		'Basic Program Loading:',00H
+MSG_BS:	DB		'Basic Program Saving:',00H
+MSG_KEY1:
+		DB		'SEL:0-9 NEXT:ANY BACK:B or BS BREAK:ESC',0DH,0AH,00H
+MSG_EXE:DB		'LOAD Only(0),LOAD And Execute(1)?',0DH,0AH,00H
+MSG_SLT:DB		'SLOT(0),(1)?',0DH,0AH,00H
+MSG_E0:	DB		'Basic Program Text Erea Over!',0DH,0AH,00H
+MSG_E1:	DB		'Basic Program Nothing!',0DH,0AH,00H
+MSG_E2:	DB		'Save Area Error!',0DH,0AH,00H
+MSG_E3:	DB		'Not Load This EXT File!',0DH,0AH,00H
+MSG_F0:	DB		'SD-CARD Initialize Error!',00H
+MSG_F1:	DB		'Not Find Filename Error!',00H
+MSG_FF:	DB		'Error',00H
+
+WRKST:	DS		2
+WRKNX:	DS		2
+WRKSP:	DS		2
+WRKCP:	DS		2
+
+;**** コマンド送信 (IN:A コマンドコード)****
+STCD:	CALL	SNDBYTE			;Aレジスタのコマンドコードを送信
+		CALL	RCVBYTE			;状態取得(00H=OK)
+		RET
+
+;******************* ここから以降を上書きしなければLOAD後にGコマンドで実行可能(FDE4)
+;******* コマンド入力 *******************:
+ST4:	CALL	GETCP
+;		CALL	INIT			;SLOT0を選択,8255初期化
+		LD		DE,TITLE
+		CALL	STRPRN
+CMD0:	CALL	LINPUT
+		LD		HL,BUFF
+		LD		A,(HL)
+		INC		HL
+		CP		'L'
+		JR		NZ,CMD1
+		LD		A,(HL)
+		CP		'M'				;LMコマンド
+		JP		Z,MLOAD
+		CP		'B'				;LBコマンド
+		JP		Z,BLOAD
+		CP		'G'				;LGコマンド
+		JP		Z,MEXE
+		JR		CMD9
+CMD1:	CP		'S'
+		JR		NZ,CMD9
+		LD		A,(HL)
+		CP		'M'				;SMコマンド
+		JP		Z,MSAVE
+		CP		'B'				;SBコマンド
+		JP		Z,BSAVE
+		CP		'D'				;SDコマンド
+		JP		Z,SDIR
+		CP		'L'				;SLコマンド
+		JP		Z,SLOT
+		JR		CMDERR
+CMD9:	CP		'Q'				;Qコマンド
+		RET		Z
+		CP		'B'				;Bコマンド
+		RET		Z
+		CP		'G'				;Gコマンド
+		JP		Z,EXECUTE
+CMDERR:	LD		DE,MSG_CMD		;コマンドエラーMSG
+		CALL	STRPRN
+		JR		CMD0
+
 ;******** 1行入力ルーチン ***********************
 ;              BS,カーソル右キーによる文字訂正のみ有効
 LINPUT:
@@ -618,6 +681,9 @@ LICHK:	EX		DE,HL			;カーソル左、BS処理でBUFF先頭を超えては戻らないようにチェック
 LICHK1:	EX		DE,HL
 		RET
 
+PRMPT:	DB		'>',00H
+BUFF:	DS		80
+
 ;****** FILE NAMEが取得できるまでスペースを読み飛ばし (IN:HL コマンド文字の次の文字 OUT:HL ファイルネームの先頭)*********
 STFN:	PUSH	AF
 STFN1:	LD		A,(HL)
@@ -628,83 +694,20 @@ STFN1:	LD		A,(HL)
 STFN3:	POP		AF
 		RET
 
-;**** ファイルネーム送信(IN:HL ファイルネームの先頭) ******
-STFS:	LD		B,20H
-STFS1:	LD		A,(HL)   	 	;FNAME送信
-		CALL	SNDBYTE
-		INC		HL
-		DJNZ	STFS1
-		LD		A,0DH
-		CALL	SNDBYTE
-		CALL	RCVBYTE  	 	;状態取得(00H=OK)
-		RET
-
-INIT1:
-		LD		DE,MSG_INIT
-		CALL	STRPRN
-		
-;**** SLOT SELECT ****
-INIT:
-SDON:	LD		A,00H			;SLOT0を選択
-		LD		BC,0FFA0H
-		AND		01H
-		OR		02H
-		OUT		(C),A
-
-;**** 8255初期化 ****
-;PORTC下位BITをOUTPUT、上位BITをINPUT、PORTBをINPUT、PORTAをOUTPUT
-		LD		A,8AH
-		LD		BC,PPI_R
-		OUT		(C),A
-;出力BITをリセット
-INIT2:	LD		A,00H			;PORTA <- 0
-		LD		BC,PPI_A
-		OUT		(C),A
-		LD		BC,PPI_C
-		OUT		(C),A			;PORTC <- 0
-		RET
-
-MSG_INIT:
-		DB		'FP-1100_SD Initialize Ok!',0DH,0AH,00H
-PRMPT:	DB		'>',00H
-TITLE:	DB		'******** FP-1100_SD ********',0DH,0AH,00H
-MSG_CMD:
-		DB		'COMMAND FAILED!',0DH,0AH
-		DB		' LM str: Load Binary',0DH,0AH
-		DB		' LG str: Load Binary And Exe',0DH,0AH
-		DB		' LB str: Load Basic',0DH,0AH
-		DB		' SM xxxx,yyyy,zzzz,str: Save Binary',0DH,0AH
-		DB		' SB str: Save Basic',0DH,0AH
-		DB		' SD str: SD Dir',0DH,0AH
-		DB		' SL    : SLOT Change',0DH,0AH
-		DB		' G x   : Exe Program',0DH,0AH
-		DB		' Q or B: Return Basic',0DH,0AH,00H
-MSG_ML:	DB		'Binary Loading:',00H
-MSG_MS:	DB		'Binary Saving:',00H
-MSG_BL:	DB		'Basic Program Loading:',00H
-MSG_BS:	DB		'Basic Program Saving:',00H
-MSG_KEY1:
-		DB		'SEL:0-9 NEXT:ANY BACK:B or BS BREAK:ESC',0DH,0AH,00H
-MSG_EXE:DB		'LOAD Only(0),LOAD And Execute(1)?',0DH,0AH,00H
-MSG_SLT:DB		'SLOT(0),(1)?',0DH,0AH,00H
-MSG_E0:	DB		'Basic Program Text Erea Over!',0DH,0AH,00H
-MSG_E1:	DB		'Basic Program Nothing!',0DH,0AH,00H
-MSG_E2:	DB		'Save Area Error!',0DH,0AH,00H
-MSG_E3:	DB		'Not Load This EXT File!',0DH,0AH,00H
-MSG_F0:	DB		'SD-CARD Initialize Error!',00H
-MSG_F1:	DB		'Not Find Filename Error!',00H
-MSG_FF:	DB		'Error',00H
-
-WRKST:	DS		2
-WRKNX:	DS		2
-WRKSP:	DS		2
-WRKCP:	DS		2
-BUFF:	DS		80
-
-;**** コマンド送信 (IN:A コマンドコード)****
-STCD:	CALL	SNDBYTE			;Aレジスタのコマンドコードを送信
-		CALL	RCVBYTE			;状態取得(00H=OK)
-		RET
+;*********** Gコマンド(16進数4桁のアドレスへJUMP) ***********************
+EXECUTE:
+		CALL	STFN			;SPACE読み飛ばし
+		LD		A,(HL)			;アドレス指定がなかったらWRKEXの示すアドレスで実行
+		AND		A
+		JR		NZ,EXE1
+		LD		A,(WRKEX)
+		LD		L,A
+		LD		A,(WRKEX+1)
+		LD		H,A
+		JP		(HL)
+EXE1:	EX		DE,HL
+		CALL	STR2HEX			;HL <- (DE)からの文字列を16進数4桁
+		JP		(HL)
 
 ;********* 機械語ロード本体 ********************************
 ML1:
@@ -764,7 +767,7 @@ ML4:	LD		DE,MSG_ML		;Loadingメッセージ
 		CALL	PRINT
 		CALL	CRLF
 
-;******************* ここから以降を上書きしなければLGコマンドでロード実行可能
+;******************* ここから以降を上書きしなければLGコマンドでロード実行可能(FF64)
 ML2:	
 		CALL	RCVBYTE			;データ受信
 		LD		(HL),A
