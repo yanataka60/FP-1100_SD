@@ -192,7 +192,7 @@ bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換した�
 
 　　LB TEST.BIN[RETURN] -> DOSファイル名「TEST.BIN.BAS」を読み込みます。
 
-#### SM XXXX,YYYY,ZZZZ,DOSファイル名[[RETURN]](XXXX,YYYY,ZZZZは16進数4桁を表す文字列)
+#### SM XXXX,YYYY,ZZZZ,DOSファイル名[RETURN](XXXX,YYYY,ZZZZは16進数4桁を表す文字列)
 　XXXX番地からYYYY番地までの機械語プログラムを実行番地ZZZZとして指定したDOSフィル名でSD-CARDにSAVEします。
 
 　拡張子の指定「.bin」は省略することが出来、ファイル名の最後が「.BIN」でない場合には自動的に付加されます。
