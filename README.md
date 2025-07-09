@@ -89,6 +89,18 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 ## ROMへの書込み
 　Z80フォルダ内のRAMPACK1.binをROMライター(TL866II Plus等)を使って27256又は27512に書き込みます。
 
+## RAMPACK1.binの扱い
+　RAMPACK1.binに登録されているファイルの一覧は次の4つになります。
+
+|ファイル名|種類|
+| ------------ | ------------ |
+|SPF8|BASIC|
+|SPE8|BASIC|
+|BOOTF8|BINARY|
+|NOOTE8|BINARY|
+
+　また、RAMPACK1.binへのファイル登録はTAKEDAさんのEMU eFP-1100で行っており、fp1100.exeと同じフォルダに置くことでeFP-1100からは「PACK0:」として読み書き出来ます。
+
 ## Arduinoプログラム
 　Arduino IDEを使ってArduinoフォルダのFP-1100_SDフォルダ内FP-1100_SD.inoを書き込みます。
 
