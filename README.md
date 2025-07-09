@@ -90,12 +90,12 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 　Z80フォルダ内のRAMPACK1.binをROMライター(TL866II Plus等)を使って27256又は27512に書き込みます。
 
 ## RAMPACK1.binの扱い
-　RAMPACK1.binに登録されているファイルの一覧は次の4つになります。
+　RAMPACK1.binに登録されているファイルは次の4つになります。
 
 |ファイル名|種類|
 | ------------ | ------------ |
-|SPF8|BASIC|
-|SPE8|BASIC|
+|SDF8|BASIC|
+|SDE8|BASIC|
 |BOOTF8|BINARY|
 |NOOTE8|BINARY|
 
