@@ -70,6 +70,10 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 
 　STLフォルダに基板を載せられるトレイの3Dデータを置いたので出力して使うと抜き差しが楽になります。
 
+　基板だけをスロットに挿入する場合、スロットにガイド等が無いためスロットの奥を覗き込みながら挿入します。
+
+　外すときには基板の取付穴にドライバー等を差し込んでひねるようにすれば取り外しやすいです。
+
 ![Tray](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/tray.jpg)
 
 　標準はSLOT0ですが、SLOT1で使うときは起動後にSLコマンドでSLOT1を指定してください。
@@ -145,6 +149,10 @@ bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換した�
 ![DumpListEditor2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/DumpListEditor1.jpg)
 
 ### コマンド
+　コマンド入力時にBSキー又は左カーソルキーで直前に入力した文字を訂正できます。
+
+　CLR、HOME、上・下・右カーソルキーは画面が乱れるだけで入力文字の訂正は出来ません。
+
 #### SD[RETURN]又はSD 文字列[RETURN]
 　文字列を入力せずにSD[RETURN]のみ入力するとSD-CARDルートディレクトリにあるファイルの一覧を表示します。
 
