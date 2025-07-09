@@ -95,7 +95,7 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 
 　実際に使用しているのは16KByte分(16Kx8)です。
 
-## RAMPACK1.binの扱い
+## RAMPACK1.binに登録されているファイル
 　RAMPACK1.binに登録されているファイルは次の4つになります。
 
 |ファイル名|種類|
