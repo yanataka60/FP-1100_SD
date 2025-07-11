@@ -103,7 +103,7 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 |SDF8|BASIC|
 |SDE8|BASIC|
 |BOOTF8|BINARY|
-|NOOTE8|BINARY|
+|BOOTE8|BINARY|
 
 　また、RAMPACK1.binへのファイル登録はTAKEDAさんのEMU eFP-1100で行っており、fp1100.exeと同じフォルダに置くことでeFP-1100からは「PACK0:」として読み書き出来ます。
 
