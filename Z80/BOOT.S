@@ -1,3 +1,9 @@
+;2025/7/11	条件付きアセンブルを導入
+;			SDコマンド時、SDコマンドでF9A9hを超えて機械語プログラムをLOADした時の挙動にバグがあったので修正。
+;			FDDAhを超えるLOADの場合は強制的に実行番地へジャンプすることに修正。
+
+
+SDF8        EQU		1			;1=ORG F800H,0=ORG E800H
 KRNGC		EQU		0703H		;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
 GETRG		EQU		070FH		;キー入力バッファからデータを取り出す A <- DATA Z=0:データあり,1:なし
 PRCRT		EQU		074FH		;1文字表示 A<-DATA,コントロールコード動作
@@ -55,8 +61,11 @@ PPI_R		EQU		PPI_A+3
 ;0E003H コントロールレジスタ
 
 
+#if SDF8 == 1
 		ORG		0F800H
-;		ORG		0E800H
+#else
+		ORG		0E800H
+#endif
 
 START:	JP		ST4
 ST2:	JP		BCALL
@@ -266,13 +275,6 @@ MSG_INIT:
 TITLE:	DB		'******** FP-1100_SD ********',0DH,0AH,00H
 
 ;******************* ここから以降を上書きしなければLM,LB,SD等プログラムのLOADは使用可能(F9AA)
-;*********** LMコマンド(機械語プログラムのLOAD) ***********************
-MLOAD:
-		CALL	ML1
-		AND		A
-		JP		NZ,ERR
-		JP		CMD0
-
 ;***************** LBコマンド(BASICプログラムのLOAD) **************************
 ; 現在PROGをNEW処理した後に新たに未使用PROGポインタを使用してLOAD
 BLOAD:
@@ -782,12 +784,28 @@ ML2:
 		XOR		A
 		RET
 
+;*********** LMコマンド(機械語プログラムのLOAD) ***********************
+MLOAD:
+		CALL	ML1
+		AND		A
+		JP		NZ,ERR
+
+#if	SDF8 == 1
+		LD		DE,ST4			;SDF8限定:LOAD最終番地(HL)がST4(DE)より大きければ
+								;         CMD0に戻っても無意味なので実行番地から実行
+		XOR 	A
+		SBC		HL,DE
+		JR		C,ML5
+		JR		ML6
+#endif
+ML5:	JP		CMD0
+
 ;********** LGコマンド(機械語プログラムのLOAD、実行番地へのJUMP) ****************
 MEXE:
 		CALL	ML1
 		AND		A
 		JP		NZ,ERR
-		LD		HL,(WRKEX)
+ML6:	LD		HL,(WRKEX)
 		JP		(HL)
 
 WRKEX:	DS		2
