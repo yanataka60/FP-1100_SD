@@ -1,7 +1,7 @@
 ;2025/7/11	条件付きアセンブルを導入
 ;			SDコマンド時、SDコマンドでF9A9hを超えて機械語プログラムをLOADした時の挙動にバグがあったので修正。
 ;			FDDAhを超えるLOADの場合は強制的に実行番地へジャンプすることに修正。
-
+;2025/7/13	BASICプログラムLOAD時のAREA OVERエラー表示のバグを修正。
 
 SDF8        EQU		1			;1=ORG F800H,0=ORG E800H
 KRNGC		EQU		0703H		;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
@@ -361,7 +361,9 @@ BL3:	JP		CMD0
 
 BLERR:
 		LD		A,0E0H			;AREA OVERエラーを表示
+		PUSH	AF
 		CALL	SNDBYTE
+		POP		AF
 		JP		ERR
 
 ;************* BASIC中からの機械語ロード *****************
