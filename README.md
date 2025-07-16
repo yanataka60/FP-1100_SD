@@ -70,6 +70,12 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 
 　スロットにガイド等が無いためスロットの奥を覗き込みながら挿入します。
 
+　基板の下に10～12mmの隙間が空くようにネジやスペーサーなどを取り付け、カードエッジコネクタと高さを合わせると挿入しやすくなります。
+
+![Spacer1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/spacer_1.JPG)
+
+![Spacer2](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/spacer_2.JPG)
+
 　外すときには基板のねじ穴にドライバー等を差し込んでひねるようにすれば取り外しやすいです。
 
 　STLフォルダに基板を載せられるトレイの3Dデータを置いたので出力して使うと抜き差しが楽になります。
