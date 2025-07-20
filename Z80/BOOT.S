@@ -2,6 +2,7 @@
 ;			SDコマンド時、SDコマンドでF9A9hを超えて機械語プログラムをLOADした時の挙動にバグがあったので修正。
 ;			FDDAhを超えるLOADの場合は強制的に実行番地へジャンプすることに修正。
 ;2025/7/13	BASICプログラムLOAD時のAREA OVERエラー表示のバグを修正。
+;2025/7/20	しょうもない記述を発見、バグではないので他のバグが見つかった時にまとめて修正します。
 
 SDF8        EQU		1			;1=ORG F800H,0=ORG E800H
 KRNGC		EQU		0703H		;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
@@ -704,7 +705,7 @@ EXECUTE:
 		LD		A,(HL)			;アドレス指定がなかったらWRKEXの示すアドレスで実行
 		AND		A
 		JR		NZ,EXE1
-		LD		A,(WRKEX)
+		LD		A,(WRKEX)		;LD	HL,(WRKEX)でいいのになぜ?、ほかに修正があった時に直します。
 		LD		L,A
 		LD		A,(WRKEX+1)
 		LD		H,A
