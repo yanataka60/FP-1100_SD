@@ -3,6 +3,8 @@
 ;			FDDAhを超えるLOADの場合は強制的に実行番地へジャンプすることに修正。
 ;2025/7/13	BASICプログラムLOAD時のAREA OVERエラー表示のバグを修正。
 ;2025/7/20	しょうもない記述を発見、バグではないので他のバグが見つかった時にまとめて修正します。
+;2025/7/30	BASICプログラム未入力でSAVEしようとしたときに'Basic Program Nothing!'と表示した後Arduinoが応答しなくなる
+;			バグを修正
 
 SDF8        EQU		1			;1=ORG F800H,0=ORG E800H
 KRNGC		EQU		0703H		;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
@@ -143,24 +145,7 @@ MS2:	CALL	CRLF
 
 ;************* SBコマンド(BASICプログラムのSAVE) **************************
 BSAVE:
-		INC		HL
-		LD		A,14H			;LOADコマンド14H
-		CALL	STCD			;コマンドコード送信
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-
-		CALL	STFN			;SPACE読み飛ばし
 		PUSH	HL
-		CALL	STFS			;ファイルネーム送信
-		POP		HL
-		AND		A				;00以外ならERROR
-		JP		NZ,ERR
-		LD		DE,MSG_BS		;Loadingメッセージ
-		CALL	STRPRN
-		EX		DE,HL
-		CALL	STRPRN			;ファイルネーム表示
-		CALL	CRLF
-
 		LD		A,(NOWPROG)		;B <- 現在PROG番号
 		LD		B,A
 		
@@ -196,7 +181,26 @@ BS2:	LD		A,(BASICEND)	;BASICENDを終了アドレスとして取得
 		LD		(WRKNX),A
 		LD		A,(BASICEND+1)
 		LD		(WRKNX+1),A
-BS3:	LD		HL,(WRKNX)
+BS3:	POP		HL
+		INC		HL
+		LD		A,14H			;LOADコマンド14H
+		CALL	STCD			;コマンドコード送信
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+
+		CALL	STFN			;SPACE読み飛ばし
+		PUSH	HL
+		CALL	STFS			;ファイルネーム送信
+		POP		HL
+		AND		A				;00以外ならERROR
+		JP		NZ,ERR
+		LD		DE,MSG_BS		;Loadingメッセージ
+		CALL	STRPRN
+		EX		DE,HL
+		CALL	STRPRN			;ファイルネーム表示
+		CALL	CRLF
+
+		LD		HL,(WRKNX)
 		LD		DE,(WRKST)		;ファイル長を計算してDEへ
 		XOR		A
 		SBC		HL,DE
@@ -223,7 +227,7 @@ BS4:
 		CALL	CRLF
 		JP		CMD0
 
-BSERR:
+BSERR:	POP		HL
 		LD		A,0E1H			;BASIC PROGRAM無しエラーを表示
 		JP		ERR
 
@@ -275,7 +279,7 @@ MSG_INIT:
 		DB		'FP-1100_SD Initialize Ok!',0DH,0AH,00H
 TITLE:	DB		'******** FP-1100_SD ********',0DH,0AH,00H
 
-;******************* ここから以降を上書きしなければLM,LB,SD等プログラムのLOADは使用可能(F9AA)
+;******************* ここから以降を上書きしなければLM,LB,SD等プログラムのLOADは使用可能(F9AC)
 ;***************** LBコマンド(BASICプログラムのLOAD) **************************
 ; 現在PROGをNEW処理した後に新たに未使用PROGポインタを使用してLOAD
 BLOAD:
@@ -391,7 +395,7 @@ BCALL:
 SDIR:
 		INC		HL
 		LD		A,(HL)
-		CP		0DH				;0DHならファイル名無し
+		CP		00H				;00Hならファイル名無し
 		JR		Z,SDIR1
 		CALL	STFN			;SPACE読み飛ばし
 SDIR1:
@@ -603,7 +607,7 @@ STCD:	CALL	SNDBYTE			;Aレジスタのコマンドコードを送信
 		CALL	RCVBYTE			;状態取得(00H=OK)
 		RET
 
-;******************* ここから以降を上書きしなければLOAD後にGコマンドで実行可能(FDE4)
+;******************* ここから以降を上書きしなければLOAD後にGコマンドで実行可能(FDDE)
 ;******* コマンド入力 *******************:
 ST4:	CALL	GETCP
 ;		CALL	INIT			;SLOT0を選択,8255初期化
@@ -705,10 +709,7 @@ EXECUTE:
 		LD		A,(HL)			;アドレス指定がなかったらWRKEXの示すアドレスで実行
 		AND		A
 		JR		NZ,EXE1
-		LD		A,(WRKEX)		;LD	HL,(WRKEX)でいいのになぜ?、ほかに修正があった時に直します。
-		LD		L,A
-		LD		A,(WRKEX+1)
-		LD		H,A
+		LD		HL,(WRKEX)
 		JP		(HL)
 EXE1:	EX		DE,HL
 		CALL	STR2HEX			;HL <- (DE)からの文字列を16進数4桁
@@ -772,7 +773,7 @@ ML4:	LD		DE,MSG_ML		;Loadingメッセージ
 		CALL	PRINT
 		CALL	CRLF
 
-;******************* ここから以降を上書きしなければLGコマンドでロード実行可能(FF64)
+;******************* ここから以降を上書きしなければLGコマンドでロード実行可能(FF59)
 ML2:	
 		CALL	RCVBYTE			;データ受信
 		LD		(HL),A
