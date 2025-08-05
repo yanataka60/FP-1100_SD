@@ -282,7 +282,7 @@ bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換した�
 
 ##### 例)
 
-30 CALL&HF803:REM TRAFFIC CONTROL.bin
+30 CALL &HF803:REM TRAFFIC CONTROL.bin
 
 
 ## 操作上の注意
