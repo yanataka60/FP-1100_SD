@@ -273,6 +273,18 @@ bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換した�
 #### B[RETURN]又はQ[RETURN]
 　BASICに復帰します。
 
+### BASICプログラム中から機械語プログラムをLOADする
+　BASICプログラム中に「CALL &HF803:REM ファイル名」と記述することで機械語をLOAD出来ます。
+
+　ファイル名はSDカードに保存されているファイル名です。拡張子はつけてもつけなくても構いません。
+
+　LOAD出来るのはF4A0hまでです。
+
+##### 例)
+
+30 CALL&HF803:REM TRAFFIC CONTROL.bin
+
+
 ## 操作上の注意
 　電源を入れたままSD-CARDの抜き差しをする場合又は「SD-CARD INITIALIZE ERROR」と表示されたときは、SD-CARDを挿入後、SD、LM、LBコマンド等でSD-CARDに3回ほどアクセスすれば復旧します。
 
@@ -297,3 +309,5 @@ bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換した�
 2025.7.13 BASICプログラムLOAD時のAREA OVERエラー表示のバグを修正。
 
 2025.7.30 BASICプログラム未入力でSAVEしようとしたときに'Basic Program Nothing!'と表示した後Arduinoが応答しなくなるバグを修正。それに伴ってF7FFh以降へ機械語プログラムがLOADされた場合の限界アドレスが変動。
+
+2025.8.6 BASICプログラム中から機械語プログラムをLOADする方法の記述が抜けていたので追記。
