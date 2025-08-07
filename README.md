@@ -150,6 +150,10 @@ MicroSD Card Adapterについているピンヘッダを除去してハンダ付
 #### 扱えるファイル
 bugfire2009さんのDumpListEditorを使ってバイナリ形式に変換したものを使います。
 
+扱う機種をFP-1100に変更したうえで変換します。
+
+![DumpListEditor0](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/DumpListEditor0.jpg)
+
 ##### 機械語 -> 「BINファイル書出し(各モデル固有ヘッダ付き)」で保存、拡張子は.bin
 
 ![DumpListEditor1](https://github.com/yanataka60/FP-1100_SD/blob/main/JPEG/DumpListEditor2.jpg)
