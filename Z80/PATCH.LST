@@ -1,0 +1,80 @@
+﻿                                ;*** AILZ80ASM *** Z-80 Assembler, version 1.0.28.0, LST:Full:4
+       1D28                     STRPRN      EQU     1D28H       ;文字列表示 DE <- 先頭アドレス 終端は00H
+                                
+000000 CFFA                                 ORG     0D000H-6
+                                            
+000000 CFFA 9700                            DW      END_P-START
+000002 CFFC 00D0                            DW      START
+000004 CFFE 00D0                            DW      START
+                                
+000006 D000 2100E8          10  START:      LD      HL,0E800H
+000009 D003 7E               7              LD      A,(HL)
+00000A D004 FEC3             7              CP      0C3H
+00000C D006 2045            12              JR      NZ,PF1
+00000E D008 23               6              INC     HL
+00000F D009 7E               7              LD      A,(HL)
+000010 D00A FEDF             7              CP      0DFH
+000012 D00C 203F            12              JR      NZ,PF1
+000014 D00E 23               6              INC     HL
+000015 D00F 7E               7              LD      A,(HL)
+000016 D010 FEED             7              CP      0EDH
+000018 D012 2039            12              JR      NZ,PF1
+00001A D014 21DFED          10              LD      HL,0EDDFH
+00001D D017 36C3            10              LD      (HL),0C3H
+00001F D019 21EAEF          10              LD      HL,0EFEAH
+000022 D01C 22E0ED          16              LD      (0EDE0H),HL
+000025 D01F 2131D0          10              LD      HL,PATCH2
+000028 D022 11EAEF          10              LD      DE,0EFEAH
+00002B D025 010900          10              LD      BC,PATHC2_END-PATCH2
+00002E D028 EDB0                            LDIR
+000030 D02A 113AD0          10              LD      DE,MSG2_PATCH
+000033 D02D CD281D          17              CALL    STRPRN
+000036 D030 C9              10              RET
+                                
+000037 D031 CD75EB          17  PATCH2:     CALL    0EB75H
+00003A D034 CD53E9          17              CALL    0E953H
+00003D D037 C3E2ED          10              JP      0EDE2H
+       D03A                     PATHC2_END:
+                                
+000040 D03A 424F4F5445382050    MSG2_PATCH: DB      'BOOTE8 PATCH OK!',0AH,0DH,00H
+            41544348204F4B21    
+            0A0D00              
+                                
+       D04D                     PF1:
+000053 D04D 2100F8          10              LD      HL,0F800H
+000056 D050 7E               7              LD      A,(HL)
+000057 D051 FEC3             7              CP      0C3H
+000059 D053 C0              11              RET     NZ
+00005A D054 23               6              INC     HL
+00005B D055 7E               7              LD      A,(HL)
+00005C D056 FEDF             7              CP      0DFH
+00005E D058 C0              11              RET     NZ
+00005F D059 23               6              INC     HL
+000060 D05A 7E               7              LD      A,(HL)
+000061 D05B FEFD             7              CP      0FDH
+000063 D05D C0              11              RET     NZ
+                                
+000064 D05E 21DFFD          10              LD      HL,0FDDFH
+000067 D061 36C3            10              LD      (HL),0C3H
+000069 D063 21F4FF          10              LD      HL,0FFF4H
+00006C D066 22E0FD          16              LD      (0FDE0H),HL
+00006F D069 217BD0          10              LD      HL,PATCH
+000072 D06C 11F4FF          10              LD      DE,0FFF4H
+000075 D06F 010900          10              LD      BC,PATHC_END-PATCH
+000078 D072 EDB0                            LDIR
+00007A D074 1184D0          10              LD      DE,MSG_PATCH
+00007D D077 CD281D          17              CALL    STRPRN
+000080 D07A C9              10              RET
+                                
+000081 D07B CD75FB          17  PATCH:      CALL    0FB75H
+000084 D07E CD53F9          17              CALL    0F953H
+000087 D081 C3E2FD          10              JP      0FDE2H
+       D084                     PATHC_END:
+                                
+00008A D084 424F4F5446382050    MSG_PATCH:  DB      'BOOTF8 PATCH OK!',0AH,0DH,00H
+            41544348204F4B21    
+            0A0D00              
+                                
+       D097                     END_P:
+                                            END
+[EOF:PATCH.S:UTF_8]

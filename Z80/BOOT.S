@@ -5,6 +5,8 @@
 ;2025/7/20	しょうもない記述を発見、バグではないので他のバグが見つかった時にまとめて修正します。
 ;2025/7/30	BASICプログラム未入力でSAVEしようとしたときに'Basic Program Nothing!'と表示した後Arduinoが応答しなくなる
 ;			バグを修正
+;2025/8/12	FP-1100_SD以外のPACKを同時に使うときにはSLOTを再指定する必要があったので修正。
+
 
 SDF8        EQU		1			;1=ORG F800H,0=ORG E800H
 KRNGC		EQU		0703H		;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
@@ -406,7 +408,7 @@ SDIR1:
 		CALL	RCVBYTE				;拡張子判定読み飛ばし
 		POP		AF
 		CP		01H					;01なら通常リターン
-		CALL	NZ,ERR				;00,01以外ならERROR
+		JP		NZ,ERR				;00,01以外ならERROR
 		JP		CMD0
 
 SDIR2:
@@ -609,9 +611,10 @@ STCD:	CALL	SNDBYTE			;Aレジスタのコマンドコードを送信
 
 ;******************* ここから以降を上書きしなければLOAD後にGコマンドで実行可能(FDDE)
 ;******* コマンド入力 *******************:
-ST4:	CALL	GETCP
+ST4:	JP		ST5
+;		CALL	GETCP
 ;		CALL	INIT			;SLOT0を選択,8255初期化
-		LD		DE,TITLE
+ST6:	LD		DE,TITLE
 		CALL	STRPRN
 CMD0:	CALL	LINPUT
 		LD		HL,BUFF
@@ -886,4 +889,9 @@ F1CHK:	LD		BC,PPI_C
 		JR		Z,F1CHK
 		RET
 
+ST5:
+		CALL	GETCP
+		CALL	INIT			;SLOT0を選択,8255初期化
+		JP		ST6
+		
 		END

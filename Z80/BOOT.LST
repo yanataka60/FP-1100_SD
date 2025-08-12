@@ -6,6 +6,8 @@
                                 ;2025/7/20  しょうもない記述を発見、バグではないので他のバグが見つかった時にまとめて修正します。
                                 ;2025/7/30  BASICプログラム未入力でSAVEしようとしたときに'Basic Program Nothing!'と表示した後Arduinoが応答しなくなる
                                 ;           バグを修正
+                                ;2025/8/12  FP-1100_SD以外のPACKを同時に使うときにはSLOTを再指定する必要があったので修正。
+                                
                                 
        0001                     SDF8        EQU     1           ;1=ORG F800H,0=ORG E800H
        0703                     KRNGC       EQU     0703H       ;キー入力バッファクリア,クリアしてからGETRGを実行することでキースキャンを実現できる
@@ -413,7 +415,7 @@
 000271 FA71 CD97FF          17          CALL    RCVBYTE             ;拡張子判定読み飛ばし
 000274 FA74 F1              10          POP     AF
 000275 FA75 FE01             7          CP      01H                 ;01なら通常リターン
-000277 FA77 C42BFB          17          CALL    NZ,ERR              ;00,01以外ならERROR
+000277 FA77 C22BFB          10          JP      NZ,ERR              ;00,01以外ならERROR
 00027A FA7A C3E8FD          10          JP      CMD0
                                 
        FA7D                     SDIR2:
@@ -672,9 +674,10 @@
                                 
                                 ;******************* ここから以降を上書きしなければLOAD後にGコマンドで実行可能(FDDE)
                                 ;******* コマンド入力 *******************:
-0005DF FDDF CD75FB          17  ST4:    CALL    GETCP
+0005DF FDDF C3F4FF          10  ST4:    JP      ST5
+                                ;       CALL    GETCP
                                 ;       CALL    INIT            ;SLOT0を選択,8255初期化
-0005E2 FDE2 118EF9          10          LD      DE,TITLE
+0005E2 FDE2 118EF9          10  ST6:    LD      DE,TITLE
 0005E5 FDE5 CD281D          17          CALL    STRPRN
 0005E8 FDE8 CD34FE          17  CMD0:   CALL    LINPUT
 0005EB FDEB 2180FE          10          LD      HL,BUFF
@@ -949,5 +952,10 @@
 0007F1 FFF1 28F7            12          JR      Z,F1CHK
 0007F3 FFF3 C9              10          RET
                                 
+       FFF4                     ST5:
+0007F4 FFF4 CD75FB          17          CALL    GETCP
+0007F7 FFF7 CD53F9          17          CALL    INIT            ;SLOT0を選択,8255初期化
+0007FA FFFA C3E2FD          10          JP      ST6
+                                        
                                         END
 [EOF:BOOT.S:SHIFT_JIS]
